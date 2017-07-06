@@ -1,0 +1,133 @@
+classdef KPCA < handle
+%% Description
+
+
+
+%% Properties
+properties 
+    % Numerical
+    training_data; % Training data
+    mean_column; % Mean column
+    number_of_rows; % Number of rows
+    number_of_cols; % Number of cols
+    scaling_factors; % Scaling factors
+    centered_scaled_data; % Centered and scaled data
+    corr_mat; % Correlation matrix
+    
+    % PCA
+    eigenvalues; % Eigenvalues
+    pca_modes; % PCA modes
+    pca_scores; % PCA scores
+    approximation_order; % PCA approximation order
+end
+
+properties (SetAccess = private, Hidden)
+  % Needed for the Kriging to work better
+    includeMoreSamples = true;  % Include more samples to improve Kriging
+    moresamples = [];           % Location of the more samples
+    a_moresamples = [];         % Values of the more samples
+end
+
+properties (Constant)
+    correlation_functions = {@correxp; @corrgauss; @corrmatern32; @corrmatern52};
+end
+
+properties
+    variable_names = {}; % Names of the physical variables
+    parameter_names = {}; % Names of the physical parameters
+    spatial_mesh_status = 'variable'; % Spatial mesh status
+    auto_update = false; % Auto-update
+    correlation_function_optimization = true; % Correlation Function Optimization
+    guess_corrector = 1; % Description: (guess = corrector * obj.a)
+    idx_0 = []; % Initial indeces for Local PCA
+    lpca_clustering_options = 0;
+ 
+ % Input/Output space
+    xp = []; % Input values for the scores
+    xp_kriged = []; % Input values for the scores to be Kriged 
+    
+ % Numerical   
+    xq = []; % Mesh
+    original_data; % Original data, includes new samples 
+    
+ % Kriging
+    trend_function = 'regpoly0'; % Kriging: trend function
+    correlation_function = @corrmatern32; % Kriging: correlation function
+    
+ % Constrained PCA
+    constrained = false; % Constrained: TRUE or FALSE
+    my_constraint = @KPCA.allPositiveCon; % Constraint function
+    
+ % Local PCA
+    clustering_dimension = 1; % Clustering on variables or samples
+    number_of_clusters = 1; % Number of clusters
+    lpca_metric = 2; % Metric for the cluster-distances
+end
+
+properties (Dependent)
+ % Mesh
+    nq;                 % Number of grid points
+    
+ % Energy
+    variance_captured;
+    
+ % Errors
+    Err_PCA_obs;            % PCA reconstruction error (observations)
+    Err_PCA_vars;           % PCA reconstruction error (variables)
+    Err_LPCA_obs;           % LPCA reconstruction error (observations)
+    Err_LPCA_vars;          % LPCA reconstruction error (variables)
+    Err_CPCA_obs;           % CPCA reconstruction error (samples)
+    Err_CPCA_vars;          % CPCA reconstruction error (variables)
+    Err_KPCA_obs;           % KPCA error (samples)
+    Err_KPCA_vars;          % KPCA error (variables)
+    Err_KLPCA_obs;          % KLPCA error (observations)
+    Err_KLPCA_vars;         % KLPCA error (variables)
+    difference_scores;      % (PCA scores - CPCA scores) / PCA scores
+    difference_scores_kriged;
+    
+ % Maps
+    map_rows;
+    map_cols;
+    xp_rows;            % Variables converted to DOUBLE values
+    x_status_double;
+    
+ % Rebuilt and sorted data
+    Y_rec;              % Recovered data from PCA or CPCA
+    a_sorted;           % Sorted PCA scores and Kriged PCA scores
+    Y_kriged;           % Predicted data from the Kriged scores
+    xp_sorted;          % Sorted training and prediction points
+    Y_sorted;           % Sorted PCA recovered and Kriged data
+    Y_k_d_sorted;       % Sorted data, Y_k_direct
+    Y_lpca;             % Full reconstruction of the data from the K+LPCA
+    Y_rec_lpca;         % Recovered data from LPCA or LCPCA (only)
+    
+ % Local PCA
+    numberOfClusters;   % Current number of clusters
+    
+end
+properties (SetAccess = private)
+ % Constrained PCA
+    cpca_scores; % CPCA scores
+    
+ % Local PCA
+    idx; % Clusters indeces
+    nz_idx_clust; % Cell array of clustered rows
+    clusters; % Cell array of clustered data
+    lpca; % Cell array of KPCA objects
+    
+ % Kriging
+    pca_scores_kriged; % Kriged PCA scores
+    cpca_scores_kriged; % Kriged CPCA scores
+    mse; % Variance of the Kriging interpolation
+    directly_kriged_data; % Kriging applied directly on the original data
+ 
+end
+
+
+
+%% Methods
+
+
+
+end
+
